@@ -1,83 +1,48 @@
-import { Suspense } from 'react';
-import { Metadata } from 'next';
+'use client';
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import FilterSidebar from '@/components/shop/FilterSidebar';
 import ProductGrid from '@/components/shop/ProductGrid';
 import { SortSelector, Pagination } from '@/components/shop/ShopControls';
 import { Product, Category, Brand, PaginatedResponse } from '@/types';
 import { catalogBrands, catalogCategories, getCatalogProducts } from '@/lib/catalog';
 
-export async function generateMetadata({ searchParams }: { searchParams: SearchParams }): Promise<Metadata> {
-  const sp = await searchParams;
-  const search = sp.search as string | undefined;
-  const category = sp.category as string | undefined;
-  const brand = sp.brand as string | undefined;
+const ShopContent = () => {
+  const searchParams = useSearchParams();
+  const page = searchParams.get('page') || '1';
+  const ordering = searchParams.get('ordering') || '-created_at';
+  const category = searchParams.get('category') || undefined;
+  const brand = searchParams.get('brand') || undefined;
+  const min_price = searchParams.get('min_price') || undefined;
+  const max_price = searchParams.get('max_price') || undefined;
+  const badge = searchParams.get('badge') || undefined;
+  const search = searchParams.get('search') || undefined;
+  const trim = searchParams.get('trim') || undefined;
+  const in_stock = searchParams.get('in_stock') || undefined;
 
-  let title = 'همه محصولات';
-  let description = 'خرید آنلاین انواع قطعات خودرو با بهترین قیمت، ضمانت اصالت و ارسال سریع به سراسر ایران.';
+  const [productsData, setProductsData] = useState<PaginatedResponse<Product>>({ count: 0, next: null, previous: null, results: [] });
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [brandsState, setBrandsState] = useState<Brand[]>([]);
 
-  if (search) {
-    title = `نتایج جستجو: ${search}`;
-    description = `نتایج جستجو برای «${search}» در فروشگاه قطعات خودرو.`;
-  } else if (category) {
-    title = `قطعات خودرو - ${category}`;
-  } else if (brand) {
-    title = `قطعات برند ${brand}`;
-    description = `خرید قطعات خودرو برند ${brand} با بهترین قیمت و ضمانت اصالت.`;
-  }
+  useEffect(() => {
+    setCategories(catalogCategories);
+    setBrandsState(catalogBrands);
+  }, []);
 
-  return {
-    title,
-    description,
-    robots: search ? { index: false, follow: true } : { index: true, follow: true },
-    openGraph: { title, description, type: 'website', url: '/shop' },
-    alternates: { canonical: '/shop' },
-  };
-}
-
-interface SearchParams { [key: string]: string | string[] | undefined }
-
-async function getCategories(): Promise<Category[]> {
-  return catalogCategories;
-}
-
-async function getBrands(): Promise<Brand[]> {
-  return catalogBrands;
-}
-
-async function getProducts(params: URLSearchParams): Promise<PaginatedResponse<Product>> {
-  return getCatalogProducts(Object.fromEntries(params.entries()));
-}
-
-export default async function ShopPage({ searchParams }: { searchParams: SearchParams }) {
-  const sp = await searchParams;
-  const page = (sp.page as string) || '1';
-  const ordering = (sp.ordering as string) || '-created_at';
-  const category = sp.category as string;
-  const brand = sp.brand as string;
-  const min_price = sp.min_price as string;
-  const max_price = sp.max_price as string;
-  const badge = sp.badge as string;
-  const search = sp.search as string;
-  const trim = sp.trim as string;
-  const in_stock = sp.in_stock as string;
-
-  const params = new URLSearchParams();
-  if (page) params.set('page', page);
-  if (ordering) params.set('ordering', ordering);
-  if (category) params.set('category', category);
-  if (brand) params.set('brand', brand);
-  if (min_price) params.set('min_price', min_price);
-  if (max_price) params.set('max_price', max_price);
-  if (badge) params.set('badge', badge);
-  if (search) params.set('search', search);
-  if (trim) params.set('compatible_vehicles', trim);
-  if (in_stock === 'true') params.set('in_stock', 'true');
-
-  const [categories, brands, productsData] = await Promise.all([
-    getCategories(),
-    getBrands(),
-    getProducts(params),
-  ]);
+  useEffect(() => {
+    const params = new URLSearchParams();
+    params.set('page', page);
+    if (ordering) params.set('ordering', ordering);
+    if (category) params.set('category', category);
+    if (brand) params.set('brand', brand);
+    if (min_price) params.set('min_price', min_price);
+    if (max_price) params.set('max_price', max_price);
+    if (badge) params.set('badge', badge);
+    if (search) params.set('search', search);
+    if (trim) params.set('compatible_vehicles', trim);
+    if (in_stock === 'true') params.set('in_stock', 'true');
+    setProductsData(getCatalogProducts(Object.fromEntries(params.entries())));
+  }, [page, ordering, category, brand, min_price, max_price, badge, search, trim, in_stock]);
 
   const totalPages = Math.ceil(productsData.count / 10);
 
@@ -120,17 +85,15 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
       <div className="flex gap-6">
         {/* Sidebar */}
         <div className="hidden md:block w-60 flex-shrink-0">
-          <Suspense fallback={<div className="space-y-3"><div className="card h-40 animate-pulse bg-gray-100" /><div className="card h-32 animate-pulse bg-gray-100" /></div>}>
-            <FilterSidebar
-              categories={categories}
-              brands={brands}
-              currentCategory={category}
-              currentBrand={brand}
-              currentMinPrice={min_price}
-              currentMaxPrice={max_price}
-              currentBadge={badge}
-            />
-          </Suspense>
+          <FilterSidebar
+            categories={categories}
+            brands={brandsState}
+            currentCategory={category}
+            currentBrand={brand}
+            currentMinPrice={min_price}
+            currentMaxPrice={max_price}
+            currentBadge={badge}
+          />
         </div>
 
         {/* Main content */}
@@ -143,21 +106,25 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
             </div>
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted hidden sm:block">مرتب‌سازی:</span>
-              <Suspense fallback={null}>
-                <SortSelector current={ordering} />
-              </Suspense>
+              <SortSelector current={ordering} />
             </div>
           </div>
 
           <ProductGrid products={productsData.results} />
 
           {totalPages > 1 && (
-            <Suspense fallback={null}>
-              <Pagination current={+page} total={totalPages} basePath="/shop" extraParams={extraParams.toString()} />
-            </Suspense>
+            <Pagination current={+page} total={totalPages} basePath="/shop" extraParams={extraParams.toString()} />
           )}
         </div>
       </div>
     </div>
+  );
+};
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={<div className="text-muted text-center py-20">در حال بارگذاری...</div>}>
+      <ShopContent />
+    </Suspense>
   );
 }

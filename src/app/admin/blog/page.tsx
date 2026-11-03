@@ -119,7 +119,7 @@ export default function AdminBlogPage() {
                       <td className="px-4 py-3 text-xs text-gray-400">{new Date(p.created_at).toLocaleDateString('fa-IR')}</td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
-                          <button onClick={() => router.push(`/admin/blog/${p.id}`)} className="text-xs text-blue-600 hover:underline">ویرایش</button>
+                          <button onClick={() => router.push(`/admin/blog/edit?id=${p.id}`)} className="text-xs text-blue-600 hover:underline">ویرایش</button>
                           <button onClick={() => handleDelete(p.id, p.title)} disabled={deleting === p.id} className="text-xs text-red-500 hover:underline disabled:opacity-50">حذف</button>
                         </div>
                       </td>

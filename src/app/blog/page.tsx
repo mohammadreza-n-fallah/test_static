@@ -1,52 +1,56 @@
-import { Metadata } from 'next';
+'use client';
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Post, PaginatedResponse } from '@/types';
 import { mediaUrl } from '@/lib/api';
-
-export const metadata: Metadata = {
-  title: 'وبلاگ قطعات خودرو | راهنما، مقاله و اخبار',
-  description: 'آخرین مقالات، راهنماهای تعمیر و نگهداری، نقد و بررسی قطعات خودرو و اخبار صنعت خودرو ایران.',
-  keywords: ['وبلاگ قطعات خودرو', 'راهنمای تعمیر خودرو', 'نگهداری خودرو', 'مقاله خودرو'],
-  openGraph: { title: 'وبلاگ قطعات خودرو', description: 'آخرین مقالات، راهنماها و اخبار قطعات خودرو', type: 'website', url: '/blog' },
-  alternates: { canonical: '/blog' },
-};
-
-interface SearchParams { page?: string; category?: string; search?: string }
-
-async function getPosts(params: URLSearchParams): Promise<PaginatedResponse<Post>> {
-  try {
-    const r = await fetch(`http://127.0.0.1:8000/api/blog/?${params.toString()}`, { next: { revalidate: 60 } });
-    if (!r.ok) return { count: 0, next: null, previous: null, results: [] };
-    return r.json();
-  } catch { return { count: 0, next: null, previous: null, results: [] }; }
-}
-
-async function getCategories(): Promise<{ id: number; name: string; slug: string }[]> {
-  try {
-    const r = await fetch('http://127.0.0.1:8000/api/blog/categories/', { next: { revalidate: 300 } });
-    if (!r.ok) return [];
-    return r.json();
-  } catch { return []; }
-}
 
 function formatDate(dateStr: string | null) {
   if (!dateStr) return '';
   return new Date(dateStr).toLocaleDateString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
-export default async function BlogPage({ searchParams }: { searchParams: SearchParams }) {
-  const sp = await searchParams;
-  const page = sp.page || '1';
-  const category = sp.category || '';
-  const search = sp.search || '';
+const BlogContent = () => {
+  const searchParams = useSearchParams();
+  const page = searchParams.get('page') || '1';
+  const category = searchParams.get('category') || '';
+  const search = searchParams.get('search') || '';
 
-  const params = new URLSearchParams();
-  params.set('page', page);
-  if (category) params.set('category__slug', category);
-  if (search) params.set('search', search);
+  const [data, setData] = useState<PaginatedResponse<Post>>({ count: 0, next: null, previous: null, results: [] });
+  const [categories, setCategories] = useState<{ id: number; name: string; slug: string }[]>([]);
 
-  const [data, categories] = await Promise.all([getPosts(params), getCategories()]);
+  useEffect(() => {
+    const params = new URLSearchParams();
+    params.set('page', page);
+    if (category) params.set('category__slug', category);
+    if (search) params.set('search', search);
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const r = await fetch(`http://127.0.0.1:8000/api/blog/?${params.toString()}`);
+        if (!r.ok) throw new Error('failed');
+        const json = await r.json();
+        if (!cancelled) setData(json as PaginatedResponse<Post>);
+      } catch {
+        if (!cancelled) setData({ count: 0, next: null, previous: null, results: [] });
+      }
+
+      try {
+        const r = await fetch('http://127.0.0.1:8000/api/blog/categories/');
+        if (!r.ok) throw new Error('failed');
+        const json = await r.json();
+        if (!cancelled) setCategories(Array.isArray(json) ? json : ((json as { results?: unknown[] }).results || []) as { id: number; name: string; slug: string }[]);
+      } catch {
+        if (!cancelled) setCategories([]);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [page, category, search]);
+
   const totalPages = Math.ceil((data.count || 0) / 10);
 
   return (
@@ -195,5 +199,13 @@ export default async function BlogPage({ searchParams }: { searchParams: SearchP
         </div>
       </div>
     </div>
+  );
+};
+
+export default function BlogPage() {
+  return (
+    <Suspense fallback={<div className="text-muted text-center py-20">در حال بارگذاری...</div>}>
+      <BlogContent />
+    </Suspense>
   );
 }

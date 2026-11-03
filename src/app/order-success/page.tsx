@@ -1,7 +1,12 @@
+'use client';
 import Link from 'next/link';
+import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 
-export default async function OrderSuccessPage({ searchParams }: { searchParams: { order?: string; ref_id?: string } }) {
-  const sp = await searchParams;
+const OrderSuccessContent = () => {
+  const sp = useSearchParams();
+  const order = sp.get('order') ?? undefined;
+  const ref_id = sp.get('ref_id') ?? undefined;
 
   return (
     <div className="container mx-auto px-4 py-20 text-center max-w-lg">
@@ -11,11 +16,11 @@ export default async function OrderSuccessPage({ searchParams }: { searchParams:
         </svg>
       </div>
       <h1 className="text-2xl font-bold text-dark-2 mb-2">سفارش شما ثبت شد!</h1>
-      {sp.order && (
-        <p className="text-muted mb-1">شماره سفارش: <span className="font-bold text-dark-2">{sp.order}</span></p>
+      {order && (
+        <p className="text-muted mb-1">شماره سفارش: <span className="font-bold text-dark-2">{order}</span></p>
       )}
-      {sp.ref_id && (
-        <p className="text-muted mb-4">کد پیگیری پرداخت: <span className="font-bold text-dark-2">{sp.ref_id}</span></p>
+      {ref_id && (
+        <p className="text-muted mb-4">کد پیگیری پرداخت: <span className="font-bold text-dark-2">{ref_id}</span></p>
       )}
       <p className="text-sm text-muted mb-8">پس از بررسی و تأیید سفارش، اطلاعات ارسال برای شما ارسال خواهد شد.</p>
       <div className="flex gap-3 justify-center">
@@ -23,5 +28,13 @@ export default async function OrderSuccessPage({ searchParams }: { searchParams:
         <Link href="/shop" className="btn-outline px-6">ادامه خرید</Link>
       </div>
     </div>
+  );
+};
+
+export default function OrderSuccessPage() {
+  return (
+    <Suspense fallback={<div className="text-muted text-center py-20">در حال بارگذاری...</div>}>
+      <OrderSuccessContent />
+    </Suspense>
   );
 }

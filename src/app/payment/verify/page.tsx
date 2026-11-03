@@ -1,10 +1,14 @@
+'use client';
 import Link from 'next/link';
+import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 
-interface SearchParams { status?: string; ref_id?: string; order_number?: string }
-
-export default async function PaymentVerifyPage({ searchParams }: { searchParams: SearchParams }) {
-  const sp = await searchParams;
-  const success = sp.status === 'success';
+const PaymentVerifyContent = () => {
+  const sp = useSearchParams();
+  const status = sp.get('status') ?? undefined;
+  const ref_id = sp.get('ref_id') ?? undefined;
+  const order_number = sp.get('order_number') ?? undefined;
+  const success = status === 'success';
 
   return (
     <div className="container mx-auto px-4 py-20 text-center max-w-lg">
@@ -17,11 +21,11 @@ export default async function PaymentVerifyPage({ searchParams }: { searchParams
           </div>
           <h1 className="text-2xl font-bold text-dark-2 mb-2">پرداخت موفق!</h1>
           <p className="text-muted mb-1">
-            شماره سفارش: <span className="font-bold text-dark-2">{sp.order_number}</span>
+            شماره سفارش: <span className="font-bold text-dark-2">{order_number}</span>
           </p>
-          {sp.ref_id && (
+          {ref_id && (
             <p className="text-muted mb-4">
-              کد مرجع پرداخت: <span className="font-bold text-dark-2 font-mono">{sp.ref_id}</span>
+              کد مرجع پرداخت: <span className="font-bold text-dark-2 font-mono">{ref_id}</span>
             </p>
           )}
           <p className="text-sm text-muted mb-8">
@@ -41,9 +45,9 @@ export default async function PaymentVerifyPage({ searchParams }: { searchParams
           </div>
           <h1 className="text-2xl font-bold text-dark-2 mb-2">پرداخت ناموفق</h1>
           <p className="text-muted mb-2">متأسفانه پرداخت شما تأیید نشد.</p>
-          {sp.order_number && (
+          {order_number && (
             <p className="text-sm text-muted mb-2">
-              شماره سفارش: <span className="font-mono">{sp.order_number}</span> — سفارش ذخیره شده و می‌توانید مجدداً پرداخت کنید.
+              شماره سفارش: <span className="font-mono">{order_number}</span> — سفارش ذخیره شده و می‌توانید مجدداً پرداخت کنید.
             </p>
           )}
           <p className="text-sm text-muted mb-8">
@@ -56,5 +60,13 @@ export default async function PaymentVerifyPage({ searchParams }: { searchParams
         </>
       )}
     </div>
+  );
+};
+
+export default function PaymentVerifyPage() {
+  return (
+    <Suspense fallback={<div className="text-muted text-center py-20">در حال بارگذاری...</div>}>
+      <PaymentVerifyContent />
+    </Suspense>
   );
 }
