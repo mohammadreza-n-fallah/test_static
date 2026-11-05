@@ -17,11 +17,11 @@ const seed = {
     { id: 7, name: 'فیلترها', slug: 'filters', image: '/فیلتر ها.png', parent: null, parent_name: null, is_active: true, order: 7, product_count: 0 },
   ],
   brands: [
-    { id: 1, name: 'کروز', slug: 'kroz', logo: '/placeholder.jpg', is_active: true, order: 1, product_count: 0 },
-    { id: 2, name: 'عظام', slug: 'ezam', logo: '/placeholder.jpg', is_active: true, order: 2, product_count: 0 },
-    { id: 3, name: 'جمع ساز', slug: 'jame-saz', logo: '/placeholder.jpg', is_active: true, order: 3, product_count: 0 },
+    { id: 1, name: 'کروز', slug: 'kroz', logo: '/کروز.png', is_active: true, order: 1, product_count: 0 },
+    { id: 2, name: 'عظام', slug: 'ezam', logo: '/عظام.jpg', is_active: true, order: 2, product_count: 0 },
+    { id: 3, name: 'جمع ساز', slug: 'jame-saz', logo: '/جمع ساز.jpg', is_active: true, order: 3, product_count: 0 },
     { id: 4, name: 'ایساکو', slug: 'isaco', logo: '/ایساکو.png', is_active: true, order: 4, product_count: 0 },
-    { id: 5, name: 'مدرن', slug: 'modern', logo: '/placeholder.jpg', is_active: true, order: 5, product_count: 0 },
+    { id: 5, name: 'مدرن', slug: 'modern', logo: '/مدرن.png', is_active: true, order: 5, product_count: 0 },
     { id: 6, name: 'ایران خودرو', slug: 'iran-khodro', logo: '/ایران خودرو.png', is_active: true, order: 6, product_count: 0 },
   ],
   products: [

@@ -12,11 +12,11 @@ export const catalogCategories: Category[] = [
 ];
 
 export const catalogBrands: Brand[] = [
-  { id: 1, name: 'کروز', slug: 'kroz', logo: '/placeholder.jpg' },
-  { id: 2, name: 'عظام', slug: 'ezam', logo: '/placeholder.jpg' },
-  { id: 3, name: 'جمع ساز', slug: 'jame-saz', logo: '/placeholder.jpg' },
+  { id: 1, name: 'کروز', slug: 'kroz', logo: '/کروز.png' },
+  { id: 2, name: 'عظام', slug: 'ezam', logo: '/عظام.jpg' },
+  { id: 3, name: 'جمع ساز', slug: 'jame-saz', logo: '/جمع ساز.jpg' },
   { id: 4, name: 'ایساکو', slug: 'isaco', logo: '/ایساکو.png' },
-  { id: 5, name: 'مدرن', slug: 'modern', logo: '/placeholder.jpg' },
+  { id: 5, name: 'مدرن', slug: 'modern', logo: '/مدرن.png' },
   { id: 6, name: 'ایران خودرو', slug: 'iran-khodro', logo: '/ایران خودرو.png' },
 ];
 
