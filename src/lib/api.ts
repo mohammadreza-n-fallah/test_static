@@ -257,10 +257,15 @@ export const adminApi = staticAdminApi;
 
 export const mediaUrl = (path: string | null | undefined) => {
   if (!path) return '/placeholder.jpg';
-  if (path === '/placeholder.jpg') return path;
   if (path.startsWith('data:')) return path;
   if (path.startsWith('http')) return path.replace(/https?:\/\/(127\.0\.0\.1|localhost):8000/, API_BASE);
-  return `${API_BASE}${path}`;
+  // Static export serves files from /public at the site root; do not prefix API_BASE.
+  if (path.startsWith('/')) {
+    const base = (process.env.NEXT_PUBLIC_BASE_PATH || '').replace(/\/$/, '');
+    return base ? `${base}${path}` : path;
+  }
+  if (path.startsWith('media/')) return `${API_BASE}/${path}`;
+  return `${API_BASE}/${path}`;
 };
 
 export const formatPrice = (price: number) =>
